@@ -1,0 +1,22 @@
+{
+  "name": "config-watcher",
+  "version": "0.1.0",
+  "author": "Pedro Nascimento <pedrolcn@gmail.com>",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "pg": "^7.18.2"
+  },
+  "devDependencies": {
+    "@types/pg": "^7.14.3",
+    "typescript": "^3.8.3"
+  }
+}

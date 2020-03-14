@@ -1,8 +1,4 @@
 {
-  "include": [
-    "src",
-    "types"
-  ],
   "compilerOptions": {
     "target": "es2017",
     "module": "CommonJS",
@@ -13,7 +9,6 @@
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
-    "rootDir": "./",
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -24,14 +19,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
     "baseUrl": "./",
-    "skipLibCheck": true,
     "paths": {
-      "*": ["src/*", "node_modules/*"]
+      "*": ["packages/*", "node_modules/*"]
     },
     "esModuleInterop": true,
-    "outDir": "dist"
+    "types": ["node"]
   }
 }

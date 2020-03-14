@@ -1,9 +1,7 @@
-import { LoggerInstance } from 'nano-errors';
 import { ClientConfig } from 'pg';
 
 export interface ConfigWatcherOptions {
   db: ClientConfig;
-  logger: LoggerInstance;
   tableName?: string;
   namespace?: string;
   notificationChannel?: string;

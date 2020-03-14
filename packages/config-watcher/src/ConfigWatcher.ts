@@ -1,5 +1,4 @@
 import { Client, Notification } from 'pg';
-import { LoggerInstance } from 'nano-errors';
 import { DEFAULT_TABLE_NAME, DEFAULT_NAMESPACE, DEFAULT_NOTIFICATION_CHANNEL } from './constants';
 import { ConfigSchema, ConfigChangeNotificationPayload, ConfigWatcherOptions } from './types';
 
@@ -14,12 +13,9 @@ export class ConfigWatcher {
 
   private readonly client: Client;
 
-  public readonly logger: LoggerInstance; 
-
   private _isReady: boolean = false;
 
   constructor(options: ConfigWatcherOptions) {
-    this.logger = options.logger;
     this.client = new Client(options.db);
 
     this.tableName = options.tableName ?? DEFAULT_TABLE_NAME;
