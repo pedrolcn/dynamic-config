@@ -1,4 +1,4 @@
-import { ClientConfig } from 'pg';
+import { ClientConfig, Client } from 'pg';
 
 export enum TableEvents {
   UPDATE = 'UPDATE',
@@ -12,7 +12,8 @@ export interface NotificationPayload<Schema> {
 }
 
 export interface TableWatcherOptions {
-  db: ClientConfig
+  db?: ClientConfig
+  client?: Client;
   table: string;
   events?: TableEvents[];
   notificationChannel?: string;

@@ -1,30 +1,41 @@
-import { Client, Notification } from 'pg';
-import { DEFAULT_TABLE_NAME, DEFAULT_NAMESPACE, DEFAULT_NOTIFICATION_CHANNEL } from './constants';
-import { ConfigSchema, ConfigChangeNotificationPayload, ConfigWatcherOptions } from './types';
+import { Client } from 'pg';
+import { Subscriber, NotificationPayload, TableWatcher } from 'table-watcher';
+import { DEFAULT_TABLE_NAME, DEFAULT_NAMESPACE } from './constants';
+import { ConfigSchema, ConfigWatcherOptions } from './types';
 
-export class ConfigWatcher {
+export class ConfigWatcher extends Subscriber<ConfigSchema> {
   private readonly configs = new Map<string, string>();
 
   private readonly tableName: string;
 
-  private readonly namespace: string;
+  private readonly tableWatcher: TableWatcher;
 
-  private readonly notificationChannel: string;
+  private readonly namespace: string;
 
   private readonly client: Client;
 
   private _isReady: boolean = false;
 
   constructor(options: ConfigWatcherOptions) {
-    this.client = new Client(options.db);
-
-    this.tableName = options.tableName ?? DEFAULT_TABLE_NAME;
+    super();
+    this.tableName = options.table ?? DEFAULT_TABLE_NAME;
     this.namespace = options.namespace ?? DEFAULT_NAMESPACE;
-    this.notificationChannel = options.notificationChannel ?? DEFAULT_NOTIFICATION_CHANNEL;
+
+    this.client = new Client(options.db);
+    
+    this.tableWatcher = new TableWatcher({
+      client: this.client,
+      table: this.tableName,
+      notificationChannel: options.notificationChannel,
+    });
   }
 
   public get isReady() {
     return this._isReady;
+  }
+
+  public get table() {
+    return this.tableName;
   }
 
   public list(): object {
@@ -32,16 +43,15 @@ export class ConfigWatcher {
   }
 
   public async initialize(): Promise<void> {
-    await this.client.connect();
-    this.client.on('notification', this.onNotification.bind(this));
-
-    await this.createNotifyFn();
-    await this.createTable();
-    await this.createTrigger();
     await this.loadConfigs();
-    await this.listen();
+    this.tableWatcher.subscribe(this);
 
     this._isReady = true;
+  }
+
+  public async build(): Promise<void> {
+    await this.createTable();
+    await this.tableWatcher.build();
   }
 
   public get(key: string): string | undefined {
@@ -56,26 +66,22 @@ ON CONFLICT (namespace, key)
 DO UPDATE SET value=$2`, [key, value]);
   }
 
-  // ==============================================================================================
-  // #                                    PRIVATE METHODS                                         #
-  // ==============================================================================================
+  public async notify(message: NotificationPayload<ConfigSchema>) {
+    if (message.record.namespace !== this.namespace) return; 
 
-  private async onNotification(message: Notification) {
-    if (message.channel !== this.notificationChannel || !message.payload) return;
-    const payload: ConfigChangeNotificationPayload = JSON.parse(message.payload!);
-
-    if (payload.record.namespace !== this.namespace) return; 
-
-    if (payload.operation === 'DELETE') {
-      this.removeConfig(payload.record);
+    if (message.operation === 'DELETE') {
+      this.removeConfig(message.record);
     } else {
-      this.setConfig(payload.record);
+      this.setConfig(message.record);
     }
 
-    console.log(`Got event ${payload.operation} with data ${JSON.stringify(payload.record)}`);
+    console.log(`Got event ${message.operation} with data ${JSON.stringify(message.record)}`);
     console.log(JSON.stringify(this.list(), undefined, 2));
   }
 
+  // ==============================================================================================
+  // #                                    PRIVATE METHODS                                         #
+  // ==============================================================================================
   private async createTable() {
     return this.client.query(`
 CREATE TABLE IF NOT EXISTS "${this.tableName}" (
@@ -84,50 +90,6 @@ CREATE TABLE IF NOT EXISTS "${this.tableName}" (
   value TEXT NOT NULL,
   PRIMARY KEY(namespace, key)
 )`);
-  }
-
-  private async createNotifyFn() {
-    return this.client.query(`
-CREATE OR REPLACE FUNCTION notify_changes()
-RETURNS trigger AS $$
-BEGIN
-    IF (TG_OP = 'DELETE') THEN
-      PERFORM pg_notify(
-        '${this.notificationChannel}',
-        json_build_object(
-          'operation', TG_OP,
-          'record', row_to_json(OLD)
-        )::text
-      );
-
-      RETURN OLD;
-    ELSE 
-      PERFORM pg_notify(
-        '${this.notificationChannel}',
-        json_build_object(
-          'operation', TG_OP,
-          'record', row_to_json(NEW)
-        )::text
-      );
-
-      RETURN NEW;
-    END IF;
-END;
-$$ LANGUAGE plpgsql`); 
-  }
-
-  private async createTrigger() {
-    await this.client.query(`DROP TRIGGER IF EXISTS configs_changed on "${this.tableName}"`);
-    return this.client.query(`
-CREATE TRIGGER configs_changed
-AFTER INSERT OR UPDATE OR DELETE
-ON "${this.tableName}"
-FOR EACH ROW
-EXECUTE PROCEDURE notify_changes()`);
-  }
-
-  private async listen() {
-    await this.client.query(`LISTEN "${this.notificationChannel}"`);
   }
 
   private setConfig(payload: ConfigSchema) {

@@ -17,7 +17,11 @@ export class TableWatcher<Schema = any> {
   private _isReady: boolean = false;
 
   constructor(options: TableWatcherOptions) {
-    this.client = new Client(options.db);
+    if (!options.db && !options.client) {
+      throw new Error("Either database connection options or a client must be passed to tableWatcher");
+    }
+
+    this.client = options.client ? options.client : new Client(options.db);
 
     this.tableName = options.table;
     this.events = options.events || DEFAULT_TABLE_EVENTS;
