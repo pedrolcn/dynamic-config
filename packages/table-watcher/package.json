@@ -1,0 +1,36 @@
+{
+  "name": "table-watcher",
+  "version": "0.1.0",
+  "description": "Watch for changes on a postgres table",
+  "keywords": [
+    "postgres",
+    "watch",
+    "pubsub"
+  ],
+  "author": "Pedro Nascimento <pedrolcn@gmail.com>",
+  "homepage": "https://github.com/pedrolcn/dynamic-config#readme",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pedrolcn/dynamic-config.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "prebuild": "rimraf dist",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/pg": "^7.14.3"
+  },
+  "dependencies": {
+    "pg": "^7.18.2"
+  }
+}

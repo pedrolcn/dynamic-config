@@ -13,10 +13,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "pg": "^7.18.2"
   },
   "devDependencies": {
-    "@types/pg": "^7.14.3",
     "typescript": "^3.8.3"
   }
 }
