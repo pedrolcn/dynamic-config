@@ -9,6 +9,7 @@
     "packages/*"
   ],
   "scripts": {
+    "clean": "rimraf node_modules",
     "bootstrap": "lerna bootstrap --use-workspaces",
     "build": "lerna run build"
   },
@@ -19,6 +20,7 @@
     "trailingComma": "es5"
   },
   "devDependencies": {
-    "lerna": "^3.20.2"
+    "lerna": "^3.20.2",
+    "rimraf": "^3.0.2"
   }
 }
