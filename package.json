@@ -1,0 +1,35 @@
+{
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "prebuild": "rimraf dist",
+    "build": "tsc"
+  },
+  "peerDependencies": {},
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "name": "config-watcher",
+  "author": "Pedro Nascimento",
+  "module": "dist/config-watcher.esm.js",
+  "devDependencies": {
+    "@types/jest": "^25.1.3",
+    "@types/pg": "^7.14.1",
+    "husky": "^4.2.3",
+    "rimraf": "^3.0.2",
+    "tslib": "^1.11.1",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "nano-errors": "nxtep-io/nano-errors#1.2.0",
+    "pg": "^7.18.2"
+  }
+}
